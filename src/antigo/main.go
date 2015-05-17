@@ -36,6 +36,7 @@ included directly in it`,
 	anti.AddCommand(initMkSnapCommand())
 	anti.AddCommand(initRestoreSnapCommand())
 	anti.AddCommand(initCompileCommand())
+	anti.AddCommand(initlistCommand())
 	anti.Execute()
 }
 
