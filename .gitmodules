@@ -1,0 +1,18 @@
+[submodule "vendor/src/github.com/spf13/cobra"]
+	path = vendor/src/github.com/spf13/cobra
+	url = https://github.com/spf13/cobra.git
+[submodule "vendor/src/github.com/inconshreveable/mousetrap"]
+	path = vendor/src/github.com/inconshreveable/mousetrap
+	url = https://github.com/inconshreveable/mousetrap.git
+[submodule "vendor/src/github.com/spf13/pflag"]
+	path = vendor/src/github.com/spf13/pflag
+	url = https://github.com/spf13/pflag.git
+[submodule "vendor/src/github.com/Sirupsen/logrus"]
+	path = vendor/src/github.com/Sirupsen/logrus
+	url = https://github.com/Sirupsen/logrus.git
+[submodule "vendor/src/github.com/codeskyblue/go-sh"]
+	path = vendor/src/github.com/codeskyblue/go-sh
+	url = https://github.com/codeskyblue/go-sh.git
+[submodule "vendor/src/github.com/codegangsta/inject"]
+	path = vendor/src/github.com/codegangsta/inject
+	url = https://github.com/codegangsta/inject.git

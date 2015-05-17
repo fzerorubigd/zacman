@@ -1,0 +1,12 @@
+*\#*
+.\#*
+backend
+*.a
+pkg/
+vendor/pkg/
+*.out
+bin/*
+!bin/*.sh
+vendor/bin/*
+.env
+.vagrant
