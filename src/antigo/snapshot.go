@@ -11,15 +11,18 @@ import (
 	"github.com/codeskyblue/go-sh"
 )
 
+// Plugin is used for a single plugin
 type Plugin struct {
-	Repo  string   `json:"repository"`
-	Path  string   `json:"path"`
-	Hash  string   `json:"commit-hash"`
-	Files []string `json:"source-files"`
-	FPath string   `json:"fpath"`
-	Order int      `json:"order"`
+	Repo    string   `json:"repository"`
+	SubPath string   `json:"sub-path"`
+	Path    string   `json:"path"`
+	Hash    string   `json:"commit-hash"`
+	Files   []string `json:"source-files"`
+	FPath   string   `json:"fpath"`
+	Order   int      `json:"order"`
 }
 
+// Plugins is used for bunch of plugins
 type Plugins struct {
 	Version int               `json:"version"`
 	Date    time.Time         `json:"date"`
@@ -62,6 +65,22 @@ func loadSnapShot(name string) (*Plugins, error) {
 	}
 
 	return p, nil
+}
+
+func listSnapShots() []string {
+	var res []string
+
+	path := root + "/snapshots/"
+
+	files, _ := ioutil.ReadDir(path)
+	for _, f := range files {
+		str := []byte(f.Name())
+		if len(str) > 41 {
+			res = append(res, string(str[:len(str)-41]))
+		}
+	}
+
+	return res
 }
 
 func newSnapShot() *Plugins {
@@ -115,7 +134,8 @@ func compileSnapshot(p *Plugins) {
 }
 
 func buildLoadScipt(p *Plugins) string {
-	res := "#build with antigo\n"
+	final := "#build with antigo\n"
+	res := ""
 	var fpath []string
 	//TODO handle order
 	for i := range p.Plugins {
@@ -125,7 +145,7 @@ func buildLoadScipt(p *Plugins) string {
 		}
 	}
 
-	res += "fpath=(" + strings.Join(fpath, " ") + " $fpath)"
+	final += "fpath=(" + strings.Join(fpath, " ") + " $fpath)\n" + "autoload -U compinit\ncompinit -i\n" + res
 
-	return res
+	return final
 }

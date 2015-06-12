@@ -10,3 +10,4 @@ bin/*
 vendor/bin/*
 .env
 .vagrant
+.dir-locals.el

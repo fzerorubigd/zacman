@@ -13,7 +13,7 @@ func snapshotEntry(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	name := sha1Sum(args[0])
+	name := args[0] + "_" + sha1Sum(args[0])
 	p, err := loadSnapShot("master")
 	if err != nil {
 		logrus.Warn(err)

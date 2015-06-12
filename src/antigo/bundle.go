@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var ignore = regexp.MustCompile(`$(http://|https://|git://|git@|/).*`)
+var ignore = regexp.MustCompile(`^(http://|https://|git://|git@|/).*`)
 
 func findTargetRepo(short string) (string, string) {
 	if !ignore.MatchString(short) {
@@ -34,6 +34,8 @@ func cloneRepo(repo, target string) error {
 		if update {
 			logrus.Print("Try to update repository...")
 			session := sh.NewSession()
+			_, err = session.SetDir(target).Command("git", "checkout", "master").Output()
+			session = sh.NewSession()
 			_, err = session.SetDir(target).Command("git", "pull").Output()
 			return err
 		}
@@ -77,13 +79,6 @@ func createIndexCache(target string, recursive bool) (string, string, []string, 
 		res = append(addMatch(files, `.*\.sh`, target))
 	}
 
-	if len(res) == 0 && recursive {
-		for i := range files {
-			if files[i].IsDir() && files[i].Name() == "src" {
-				return createIndexCache(target+"/src", false)
-			}
-		}
-	}
 	cmd := sh.NewSession()
 	hash, err := cmd.SetDir(target).Command("git", "rev-parse", "--verify", "HEAD").Output()
 	if err != nil {
@@ -93,9 +88,14 @@ func createIndexCache(target string, recursive bool) (string, string, []string, 
 }
 
 func bundleEntry(cmd *cobra.Command, args []string) {
-	if len(args) < 1 {
+	if len(args) < 1 || len(args) > 2 {
 		cmd.Usage()
 		os.Exit(1)
+	}
+
+	subpath := ""
+	if len(args) == 2 {
+		subpath = args[1]
 	}
 
 	makeRoot()
@@ -105,29 +105,27 @@ func bundleEntry(cmd *cobra.Command, args []string) {
 		p = newSnapShot()
 	}
 
-	for i := range args {
-		git, target := findTargetRepo(args[i])
-		if err := cloneRepo(git, target); err != nil {
-			logrus.Warn(err)
-			continue
-		}
-		hash, fpath, res, err := createIndexCache(target, true)
-		if err != nil {
-			logrus.Warn(err)
-			continue
-		}
+	git, target := findTargetRepo(args[0])
 
-		pl := Plugin{
-			Repo:  git,
-			Path:  target,
-			Hash:  hash,
-			Files: res,
-			FPath: fpath,
-			Order: order,
-		}
-
-		p.Plugins[git] = pl
+	if err := cloneRepo(git, target); err != nil {
+		logrus.Warn(err)
 	}
+	hash, fpath, res, err := createIndexCache(target+"/"+subpath, true)
+	if err != nil {
+		logrus.Warn(err)
+	}
+
+	pl := Plugin{
+		Repo:    git,
+		SubPath: subpath,
+		Path:    target,
+		Hash:    hash,
+		Files:   res,
+		FPath:   fpath,
+		Order:   order,
+	}
+
+	p.Plugins[git+"/"+subpath] = pl
 
 	err = saveSnapShot("master", p)
 	if err != nil {

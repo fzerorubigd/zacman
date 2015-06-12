@@ -5,6 +5,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var listSnaps bool
+
 func listEntry(cmd *cobra.Command, args []string) {
 	makeRoot()
 	p, err := loadSnapShot("master")
@@ -13,8 +15,14 @@ func listEntry(cmd *cobra.Command, args []string) {
 		p = newSnapShot()
 	}
 
-	for i := range p.Plugins {
-		logrus.Info(p.Plugins[i].Repo, " ==> ", p.Plugins[i].Hash)
+	if listSnaps {
+		for _, s := range listSnapShots() {
+			logrus.Info(s)
+		}
+	} else {
+		for i := range p.Plugins {
+			logrus.Info(p.Plugins[i].Repo, " ", p.Plugins[i].SubPath, " ==> ", p.Plugins[i].Hash)
+		}
 	}
 }
 
@@ -25,6 +33,14 @@ func initlistCommand() *cobra.Command {
 		Long:  `list all plugins in master snapshot`,
 		Run:   listEntry,
 	}
+
+	list.Flags().BoolVarP(
+		&listSnaps,
+		"snapshots",
+		"s",
+		false,
+		"list available snapshots instead of plugins",
+	)
 
 	return list
 }

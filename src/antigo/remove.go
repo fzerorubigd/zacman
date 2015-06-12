@@ -8,9 +8,14 @@ import (
 )
 
 func removeEntry(cmd *cobra.Command, args []string) {
-	if len(args) < 1 {
+	if len(args) < 1 || len(args) > 2 {
 		cmd.Usage()
 		os.Exit(1)
+	}
+
+	subpath := ""
+	if len(args) == 2 {
+		subpath = args[1]
 	}
 	makeRoot()
 	p, err := loadSnapShot("master")
@@ -19,22 +24,19 @@ func removeEntry(cmd *cobra.Command, args []string) {
 		p = newSnapShot()
 	}
 
-	for i := range args {
-		git, _ := findTargetRepo(args[i])
+	git, _ := findTargetRepo(args[0])
 
-		if pl, ok := p.Plugins[git]; ok {
-			delete(p.Plugins, git)
-			if b, err := exists(pl.Path); err == nil && b {
-				if rmFolder {
-					panicOnErr(safeRemove(pl.Path, root))
-				} else {
-					logrus.Info("the plugin removed from index, but the folder stil exists")
-				}
+	if pl, ok := p.Plugins[git+"/"+subpath]; ok {
+		delete(p.Plugins, git+"/"+subpath)
+		if b, err := exists(pl.Path); err == nil && b {
+			if rmFolder {
+				panicOnErr(safeRemove(pl.Path, root))
+			} else {
+				logrus.Info("the plugin removed from index, but the folder stil exists")
 			}
-		} else {
-			logrus.Warnf("can not find this repository %s", git)
-			continue
 		}
+	} else {
+		logrus.Warnf("can not find this repository %s %s", git, subpath)
 	}
 
 	err = saveSnapShot("master", p)
