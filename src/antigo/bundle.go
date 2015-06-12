@@ -68,15 +68,22 @@ func createIndexCache(target string, recursive bool) (string, string, []string, 
 		return "", "", nil, err
 	}
 
-	// If there is an plugin.zsh file then simply source it
-	res = append(addMatch(files, `.*\.plugin\.zsh$`, target))
-
-	if len(res) == 0 {
-		res = append(addMatch(files, `.*\.zsh`, target))
+	if theme {
+		// this is a theme bundle, try to find zsh-theme
+		res = append(res, addMatch(files, `.*\.zsh-theme$`, target)...)
 	}
 
 	if len(res) == 0 {
-		res = append(addMatch(files, `.*\.sh`, target))
+		// If there is an plugin.zsh file then simply source it
+		res = append(res, addMatch(files, `.*\.plugin\.zsh$`, target)...)
+	}
+
+	if len(res) == 0 {
+		res = append(res, addMatch(files, `.*\.zsh$`, target)...)
+	}
+
+	if len(res) == 0 {
+		res = append(res, addMatch(files, `.*\.sh$`, target)...)
 	}
 
 	cmd := sh.NewSession()
@@ -123,6 +130,7 @@ func bundleEntry(cmd *cobra.Command, args []string) {
 		Files:   res,
 		FPath:   fpath,
 		Order:   order,
+		Theme:   theme,
 	}
 
 	p.Plugins[git+"/"+subpath] = pl
@@ -159,6 +167,8 @@ antigo bundle target
 		0,
 		"order of loading the bundle, greater value means load sooner",
 	)
+
+	bundle.Flags().BoolVarP(&theme, "theme", "t", false, "is this a theme?")
 
 	return bundle
 }

@@ -12,6 +12,7 @@ var (
 	update   bool
 	rmFolder bool
 	order    int
+	theme    bool
 )
 
 func main() {

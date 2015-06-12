@@ -20,6 +20,7 @@ type Plugin struct {
 	Files   []string `json:"source-files"`
 	FPath   string   `json:"fpath"`
 	Order   int      `json:"order"`
+	Theme   bool     `json:"theme"`
 }
 
 // Plugins is used for bunch of plugins
