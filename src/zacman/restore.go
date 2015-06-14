@@ -32,7 +32,7 @@ func initRestoreSnapCommand() *cobra.Command {
 		Use:   "restore",
 		Short: "restore a snapshot",
 		Long: `try to restore a snapshot, usage :
-antigo restore the_name`,
+zacman restore the_name`,
 		Run: snapshotEntry,
 	}
 

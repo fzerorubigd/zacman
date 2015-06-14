@@ -10,7 +10,7 @@
     "command": [
         "bash",
         "-c",
-        "gb build antigo"
+        "gb build zacman"
     ],
     "env": {
         "POWERD_BY": "github.com/codeskyblue/fswatch"

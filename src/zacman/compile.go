@@ -18,7 +18,7 @@ func compileEntry(cmd *cobra.Command, args []string) {
 
 	//TODO : better handle this
 	compileSnapshot(p, concurrent)
-	ioutil.WriteFile(root+"/antigo.zsh", []byte(buildLoadScipt(p)), 0644)
+	ioutil.WriteFile(root+"/zacman.zsh", []byte(buildLoadScipt(p)), 0644)
 
 	logrus.Info("compile is done, check the log if there is a problem")
 }

@@ -43,7 +43,7 @@ func safeRemove(folder, root string) error {
 		return os.RemoveAll(folder)
 	}
 
-	return errors.New("folder is not inside the ANTIGO_ROOT")
+	return errors.New("folder is not inside the ZACMAN_ROOT")
 }
 
 func sha1Sum(i string) string {

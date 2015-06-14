@@ -52,7 +52,7 @@ func initRemoveCommand() *cobra.Command {
 		Short: "try to remove a plugin",
 		Long: `try to remove a plugin, the full git repo,
 or "user/repo" for github user is accepted usage :
-antigo remove target
+zacman remove target
 `,
 		Run: removeEntry,
 	}

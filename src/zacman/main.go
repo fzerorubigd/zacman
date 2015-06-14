@@ -18,8 +18,8 @@ var (
 
 func main() {
 	var anti = &cobra.Command{
-		Use:   "antigo",
-		Short: "Antigo is a zsh config manager",
+		Use:   "zacman",
+		Short: "zacman is a zsh config manager",
 		Long: `A fast, simple zsh config builder using go,
 the goal is create a simple config with all other files
 included directly in it`,
@@ -30,7 +30,7 @@ included directly in it`,
 		"root",
 		"r",
 		root,
-		"set the root for antigo",
+		"set the root for zacman",
 	)
 
 	anti.AddCommand(initBundleCommand())
@@ -43,12 +43,12 @@ included directly in it`,
 }
 
 func getRootDir() string {
-	root := os.Getenv("ANTIGO_ROOT")
+	root := os.Getenv("ZACMAN_ROOT")
 	if root == "" {
 		var err error
 		root, err = getHomeDir()
 		panicOnErr(err)
-		root += "/.antigo"
+		root += "/.zacman"
 	}
 
 	return root

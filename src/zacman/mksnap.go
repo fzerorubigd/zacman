@@ -37,7 +37,7 @@ func initMkSnapCommand() *cobra.Command {
 		Use:   "snapshot",
 		Short: "snapshot the current state",
 		Long: `try to save a snapshot rom current list, usage :
-antigo snapshot the_name`,
+zacman snapshot the_name`,
 		Run: snapshotEntry,
 	}
 

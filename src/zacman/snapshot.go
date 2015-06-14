@@ -173,7 +173,7 @@ func compileSnapshot(p *Plugins, concurrent uint) {
 func buildLoadScipt(p *Plugins) string {
 	final := fmt.Sprintf(
 		`# Auto generated file, DO NOT EDIT!
-# build with antigo
+# build with zacman
 # %s
 
 `,

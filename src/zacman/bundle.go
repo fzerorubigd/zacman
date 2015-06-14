@@ -148,7 +148,7 @@ func initBundleCommand() *cobra.Command {
 		Short: "try to bundle a plugin",
 		Long: `try to bundle a plugin, the full git repo,
 or "user/repo" for github user is accepted usage :
-antigo bundle target
+zacman bundle target
 `,
 		Run: bundleEntry,
 	}
