@@ -26,7 +26,7 @@ func findTargetRepo(short string) (string, string) {
 	return short, root + "/repo/" + dir
 }
 
-func cloneRepo(repo, target string) error {
+func cloneRepo(repo, target string, update bool) error {
 	is, err := exists(target)
 	panicOnErr(err)
 
@@ -94,6 +94,31 @@ func createIndexCache(target string, recursive bool) (string, string, []string, 
 	return strings.Trim(string(hash), " \n\t"), target, res, nil
 }
 
+func doBundle(path, subpath string, update bool) (*Plugin, error) {
+	git, target := findTargetRepo(path)
+
+	if err := cloneRepo(git, target, update); err != nil {
+		return nil, err
+	}
+	hash, fpath, res, err := createIndexCache(target+"/"+subpath, true)
+	if err != nil {
+		return nil, err
+	}
+
+	pl := Plugin{
+		Repo:    git,
+		SubPath: subpath,
+		Path:    target,
+		Hash:    hash,
+		Files:   res,
+		FPath:   fpath,
+		Order:   order,
+		Theme:   theme,
+	}
+
+	return &pl, nil
+}
+
 func bundleEntry(cmd *cobra.Command, args []string) {
 	if len(args) < 1 || len(args) > 2 {
 		cmd.Usage()
@@ -111,34 +136,16 @@ func bundleEntry(cmd *cobra.Command, args []string) {
 		logrus.Warn(err)
 		p = newSnapShot()
 	}
-
-	git, target := findTargetRepo(args[0])
-
-	if err := cloneRepo(git, target); err != nil {
-		logrus.Warn(err)
-	}
-	hash, fpath, res, err := createIndexCache(target+"/"+subpath, true)
+	pl, err := doBundle(args[0], subpath, update)
 	if err != nil {
-		logrus.Warn(err)
+		logrus.Fatal(err)
 	}
-
-	pl := Plugin{
-		Repo:    git,
-		SubPath: subpath,
-		Path:    target,
-		Hash:    hash,
-		Files:   res,
-		FPath:   fpath,
-		Order:   order,
-		Theme:   theme,
-	}
-
-	name := strings.Trim(git+"/"+subpath, "/")
-	p.Plugins[name] = pl
+	name := strings.Trim(pl.Repo+"/"+pl.SubPath, "/")
+	p.Plugins[name] = *pl
 
 	err = saveSnapShot("master", p)
 	if err != nil {
-		logrus.Warn(err)
+		logrus.Fatal(err)
 	}
 }
 

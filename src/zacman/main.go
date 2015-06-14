@@ -17,7 +17,7 @@ var (
 )
 
 func main() {
-	var anti = &cobra.Command{
+	var zac = &cobra.Command{
 		Use:   "zacman",
 		Short: "zacman is a zsh config manager",
 		Long: `A fast, simple zsh config builder using go,
@@ -25,7 +25,7 @@ the goal is create a simple config with all other files
 included directly in it`,
 	}
 
-	anti.PersistentFlags().StringVarP(
+	zac.PersistentFlags().StringVarP(
 		&root,
 		"root",
 		"r",
@@ -33,13 +33,15 @@ included directly in it`,
 		"set the root for zacman",
 	)
 
-	anti.AddCommand(initBundleCommand())
-	anti.AddCommand(initRemoveCommand())
-	anti.AddCommand(initMkSnapCommand())
-	anti.AddCommand(initRestoreSnapCommand())
-	anti.AddCommand(initCompileCommand())
-	anti.AddCommand(initlistCommand())
-	anti.Execute()
+	zac.AddCommand(initBundleCommand())
+	zac.AddCommand(initRemoveCommand())
+	zac.AddCommand(initMkSnapCommand())
+	zac.AddCommand(initRestoreSnapCommand())
+	zac.AddCommand(initCompileCommand())
+	zac.AddCommand(initlistCommand())
+	zac.AddCommand(initUpdateCommand())
+
+	zac.Execute()
 }
 
 func getRootDir() string {

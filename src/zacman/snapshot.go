@@ -114,7 +114,7 @@ func newSnapShot() *Plugins {
 
 func checkoutCommit(pl Plugin, pull bool) error {
 	if b, err := exists(pl.Path); !b && err == nil {
-		if err := cloneRepo(pl.Repo, pl.Path); err != nil {
+		if err := cloneRepo(pl.Repo, pl.Path, false); err != nil {
 			return err
 		}
 		pull = false

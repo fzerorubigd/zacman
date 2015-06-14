@@ -16,6 +16,9 @@ func compileEntry(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	if concurrent < 1 {
+		concurrent = 1
+	}
 	//TODO : better handle this
 	compileSnapshot(p, concurrent)
 	ioutil.WriteFile(root+"/zacman.zsh", []byte(buildLoadScipt(p)), 0644)
