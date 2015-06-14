@@ -17,7 +17,7 @@ func compileEntry(cmd *cobra.Command, args []string) {
 	}
 
 	//TODO : better handle this
-	compileSnapshot(p)
+	compileSnapshot(p, concurrent)
 	ioutil.WriteFile(root+"/antigo.zsh", []byte(buildLoadScipt(p)), 0644)
 
 	logrus.Info("compile is done, check the log if there is a problem")
@@ -30,6 +30,8 @@ func initCompileCommand() *cobra.Command {
 		Long:  `try to compile all plugins`,
 		Run:   compileEntry,
 	}
+
+	compile.Flags().UintVarP(&concurrent, "concurrent", "c", 5, "how many clone in parallel?")
 
 	return compile
 }

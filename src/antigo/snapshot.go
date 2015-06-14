@@ -4,11 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/codeskyblue/go-sh"
+	"github.com/vada-ir/semaphore"
 )
 
 // Plugin is used for a single plugin
@@ -25,9 +28,30 @@ type Plugin struct {
 
 // Plugins is used for bunch of plugins
 type Plugins struct {
-	Version int               `json:"version"`
-	Date    time.Time         `json:"date"`
+	Version int       `json:"version"`
+	Date    time.Time `json:"date"`
+	// Maps are not sortable in golang.
 	Plugins map[string]Plugin `json:"plugins"`
+}
+
+// SortablePlugins is a type for handling sort on plugins in puild
+type SortablePlugins []Plugin
+
+func (s SortablePlugins) Len() int           { return len(s) }
+func (s SortablePlugins) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+func (s SortablePlugins) Less(i, j int) bool { return s[i].Order > s[j].Order }
+
+// Sort return a sort list from plugins
+func (p Plugins) Sort() SortablePlugins {
+	s := make(SortablePlugins, len(p.Plugins))
+	i := 0
+	for _, plugin := range p.Plugins {
+		s[i] = plugin
+		i++
+	}
+
+	sort.Sort(s)
+	return s
 }
 
 func saveSnapShot(name string, pl *Plugins) error {
@@ -124,29 +148,47 @@ func checkoutCommit(pl Plugin, pull bool) error {
 	return nil
 }
 
-func compileSnapshot(p *Plugins) {
+func compileSnapshot(p *Plugins, concurrent uint) {
+	wg := sync.WaitGroup{}
+	wg.Add(len(p.Plugins))
+	// I don't want more than
+	s := semaphore.NewSemaphore(int(concurrent))
 	for i := range p.Plugins {
-		err := checkoutCommit(p.Plugins[i], true)
-		if err != nil {
-			logrus.Warnf("can not restore state for %s reason is %s", p.Plugins[i].Repo, err.Error())
-			continue
-		}
+		go func(i string) {
+			s.Acquire(1)
+			defer func() {
+				s.Release(1)
+				wg.Done()
+			}()
+			err := checkoutCommit(p.Plugins[i], true)
+			if err != nil {
+				logrus.Warnf("can not restore state for %s reason is %s", p.Plugins[i].Repo, err.Error())
+			}
+		}(i)
 	}
+
+	wg.Wait()
 }
 
 func buildLoadScipt(p *Plugins) string {
-	final := "#build with antigo\n"
+	final := fmt.Sprintf(
+		`# Auto generated file, DO NOT EDIT!
+# build with antigo
+# %s
+
+`,
+		time.Now().Format(time.RFC3339))
 	res := ""
 	var fpath []string
 	//TODO handle order
-	for i := range p.Plugins {
-		fpath = append(fpath, p.Plugins[i].FPath)
-		for _, f := range p.Plugins[i].Files {
+	s := p.Sort()
+	for i := range s {
+		fpath = append(fpath, s[i].FPath)
+		for _, f := range s[i].Files {
 			res += "source " + f + "\n"
 		}
 	}
-
-	final += "fpath=(" + strings.Join(fpath, " ") + " $fpath)\n" + "autoload -U compinit\ncompinit -i\n" + res
+	final += "autoload -U compinit\ncompinit -i\n" + res + "\nfpath=(" + strings.Join(fpath, " ") + " $fpath)\n"
 
 	return final
 }

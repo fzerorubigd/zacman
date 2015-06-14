@@ -133,7 +133,8 @@ func bundleEntry(cmd *cobra.Command, args []string) {
 		Theme:   theme,
 	}
 
-	p.Plugins[git+"/"+subpath] = pl
+	name := strings.Trim(git+"/"+subpath, "/")
+	p.Plugins[name] = pl
 
 	err = saveSnapShot("master", p)
 	if err != nil {

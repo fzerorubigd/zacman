@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -25,9 +26,9 @@ func removeEntry(cmd *cobra.Command, args []string) {
 	}
 
 	git, _ := findTargetRepo(args[0])
-
-	if pl, ok := p.Plugins[git+"/"+subpath]; ok {
-		delete(p.Plugins, git+"/"+subpath)
+	name := strings.Trim(git+"/"+subpath, "/")
+	if pl, ok := p.Plugins[name]; ok {
+		delete(p.Plugins, name)
 		if b, err := exists(pl.Path); err == nil && b {
 			if rmFolder {
 				panicOnErr(safeRemove(pl.Path, root))

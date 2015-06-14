@@ -7,12 +7,13 @@ import (
 )
 
 var (
-	version  = 1
-	root     = getRootDir()
-	update   bool
-	rmFolder bool
-	order    int
-	theme    bool
+	version    = 1
+	root       = getRootDir()
+	update     bool
+	rmFolder   bool
+	order      int
+	theme      bool
+	concurrent uint
 )
 
 func main() {
