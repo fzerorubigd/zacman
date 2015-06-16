@@ -14,6 +14,7 @@ var (
 	order      int
 	theme      bool
 	concurrent uint
+	shortList  bool
 )
 
 func main() {

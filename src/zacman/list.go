@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -17,12 +19,19 @@ func listEntry(cmd *cobra.Command, args []string) {
 
 	if listSnaps {
 		for _, s := range listSnapShots() {
-			logrus.Info(s)
+			fmt.Println(s)
 		}
 	} else {
-
 		for _, i := range p.Sort() {
-			logrus.Info(i.Repo, " ", i.SubPath, " ==> ", i.Hash)
+			if !shortList {
+				fmt.Println(i.Repo, " ", i.SubPath, " ==> ", i.Hash)
+			} else {
+				lst := i.Repo
+				if i.SubPath != "" {
+					lst += "/" + i.SubPath
+				}
+				fmt.Println(lst)
+			}
 		}
 	}
 }
@@ -41,6 +50,14 @@ func initlistCommand() *cobra.Command {
 		"s",
 		false,
 		"list available snapshots instead of plugins",
+	)
+
+	list.Flags().BoolVarP(
+		&shortList,
+		"short",
+		"c",
+		false,
+		"show the short version instead of the full list",
 	)
 
 	return list

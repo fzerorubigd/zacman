@@ -1,0 +1,86 @@
+#compdef tmass
+
+typeset -A opt_args
+
+_arguments -C \
+  '1:cmd:->cmds' \
+  '*:arg:->args' \
+&& ret=0
+
+case "$state" in
+  (cmds)
+	   local commands; commands=(
+         'bundle:try to bundle a plugin'
+         'remove:try to remove a plugin'
+         'snapshot:snapshot the current state'
+         'restore:restore a snapshot'
+         'compile:try to compile all plugins'
+         'list:list all plugins'
+         'update:update all plugins'
+         'help:Help about any command'
+		 )
+	  _describe -t commands 'command' commands && ret=0
+	  ;;
+   (args)
+		local sec; sec=(
+			'--root=:config root to set'
+		)
+
+		case "${line[1]}" in
+			(bundle)
+				sec+=(
+					"--help: help on bundle"
+					"--update: update repo if exists"
+                    "--order=:load order, bigger load sooner"
+                    "--theme:is this a theme?"
+				)
+				;;
+			(remove)
+				sec+=(
+					"--help: help on remove"
+					"--rm:remove folder too"
+				)
+                IFS=$'\n' sec+=($(zacman list -c))
+				;;
+            (snapshot)
+				sec+=(
+					"--help: help on snapshot"
+				)
+                ;;
+            (restore)
+				sec+=(
+					"--help: help on restore"
+				)
+            (compile)
+                sec+=(
+                    "--help:help on compile"
+                    "--concurrent=:how many concurrent git pull if the repos are not avaiable"
+                )
+                ;;
+            (list)
+                sec+=(
+                    "--help:help on list"
+                    "--snapshots:show snap shots list not the plugin list"
+                )
+                ;;
+            (update)
+                sec+=(
+                    "--help:help on compile"
+                    "--concurrent=:how many concurrent git pull"
+                )
+                ;;
+            (help)
+				sec+=(
+                    "bundle"
+                    "remove"
+                    "snapshot"
+                    "restore"
+                    "compile"
+                    "list"
+                    "update"
+				)
+			esac;
+			_describe -t sec 'sec' sec && ret=0
+	   ;;
+esac
+return 1;
