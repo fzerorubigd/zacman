@@ -8,7 +8,7 @@ import (
 
 var (
 	version    = 1
-	root       = getRootDir()
+	root       string
 	update     bool
 	rmFolder   bool
 	order      int
@@ -29,7 +29,7 @@ included directly in it`,
 		&root,
 		"root",
 		"r",
-		root,
+		getRootDir(),
 		"set the root for zacman",
 	)
 

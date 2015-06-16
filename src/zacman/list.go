@@ -20,8 +20,9 @@ func listEntry(cmd *cobra.Command, args []string) {
 			logrus.Info(s)
 		}
 	} else {
-		for i := range p.Plugins {
-			logrus.Info(p.Plugins[i].Repo, " ", p.Plugins[i].SubPath, " ==> ", p.Plugins[i].Hash)
+
+		for _, i := range p.Sort() {
+			logrus.Info(i.Repo, " ", i.SubPath, " ==> ", i.Hash)
 		}
 	}
 }
