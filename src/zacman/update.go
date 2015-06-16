@@ -47,6 +47,8 @@ func updateEntry(md *cobra.Command, args []string) {
 	}
 
 	wg.Wait()
+
+	saveSnapShot("master", p)
 }
 
 func initUpdateCommand() *cobra.Command {
