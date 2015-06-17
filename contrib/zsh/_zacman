@@ -40,7 +40,7 @@ case "$state" in
         "--help: help on remove"
         "--rm:remove folder too"
         )
-      IFS=$'\n' sec+=($(zacman list -c))
+      IFS=$'\n' sec+=(${$(zacman list -c)/:/\\:})
     ;;
     (snapshot)
       sec+=(
