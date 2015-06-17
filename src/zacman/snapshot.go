@@ -188,7 +188,7 @@ func buildLoadScipt(p *Plugins) string {
 			res += "source " + f + "\n"
 		}
 	}
-	final += "autoload -U compinit\ncompinit -i\n" + res + "\nfpath=(" + strings.Join(fpath, " ") + " $fpath)\n"
+	final += "fpath=(" + strings.Join(fpath, " ") + " $fpath)\nautoload -U compinit\ncompinit -i\n" + res + "\n"
 
 	return final
 }
