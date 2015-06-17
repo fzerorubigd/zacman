@@ -51,6 +51,8 @@ case "$state" in
       sec+=(
         "--help: help on restore"
         )
+      IFS=$'\n' sec+=(${$(zacman list -s)/:/\\:})
+    ;;
     (compile)
       sec+=(
         "--help:help on compile"
