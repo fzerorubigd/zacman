@@ -10,12 +10,6 @@
 [submodule "vendor/src/github.com/Sirupsen/logrus"]
 	path = vendor/src/github.com/Sirupsen/logrus
 	url = https://github.com/Sirupsen/logrus.git
-[submodule "vendor/src/github.com/codeskyblue/go-sh"]
-	path = vendor/src/github.com/codeskyblue/go-sh
-	url = https://github.com/codeskyblue/go-sh.git
-[submodule "vendor/src/github.com/codegangsta/inject"]
-	path = vendor/src/github.com/codegangsta/inject
-	url = https://github.com/codegangsta/inject.git
 [submodule "vendor/src/github.com/vada-ir/semaphore"]
 	path = vendor/src/github.com/vada-ir/semaphore
 	url = https://github.com/vada-ir/semaphore.git

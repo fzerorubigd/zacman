@@ -4,15 +4,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"os/exec"
+	"regexp"
 	"sort"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/codeskyblue/go-sh"
 	"github.com/vada-ir/semaphore"
 )
+
+var ignore = regexp.MustCompile(`^(http://|https://|git://|git@|/).*`)
 
 // Plugin is used for a single plugin
 type Plugin struct {
@@ -121,13 +125,16 @@ func checkoutCommit(pl Plugin, pull bool) error {
 	} else if err != nil {
 		return err
 	}
-	sess := sh.NewSession()
-	_, err := sess.SetDir(pl.Path).Command("git", "cat-file", "-t", pl.Hash).Output()
+	cmd := exec.Command("git", "cat-file", "-t", pl.Hash)
+	cmd.Dir = pl.Path
+
+	_, err := cmd.CombinedOutput()
 	if err != nil {
 		if pull {
 			logrus.Warnf("failed with error %s , try to pull", err.Error())
-			sess = sh.NewSession()
-			out, err := sess.SetDir(pl.Path).Command("git", "pull").Output()
+			cmd = exec.Command("git", "pull")
+			cmd.Dir = pl.Path
+			out, err := cmd.Output()
 			if err != nil {
 				logrus.Warn(string(out))
 				return err
@@ -138,8 +145,9 @@ func checkoutCommit(pl Plugin, pull bool) error {
 		return err
 	}
 
-	sess = sh.NewSession()
-	out, err := sess.SetDir(pl.Path).Command("git", "checkout", pl.Hash).Output()
+	cmd = exec.Command("git", "checkout", pl.Hash)
+	cmd.Dir = pl.Path
+	out, err := cmd.Output()
 	if err != nil {
 		logrus.Warn(string(out))
 		return err
@@ -191,4 +199,113 @@ func buildLoadScipt(p *Plugins) string {
 	final += "fpath=(" + strings.Join(fpath, " ") + " $fpath)\nautoload -U compinit\ncompinit -i\n" + res + "\n"
 
 	return final
+}
+
+func findTargetRepo(short string) (string, string) {
+	if !ignore.MatchString(short) {
+		short = "https://github.com/" + short
+	}
+
+	dir := strings.Replace(short, ":", "-COLON-", -1)
+	dir = strings.Replace(dir, "/", "-SLASH-", -1)
+	dir = strings.Replace(dir, ".", "-DOT-", -1)
+	dir = strings.Replace(dir, "@", "-AT-", -1)
+
+	return short, root + "/repo/" + dir
+}
+
+func cloneRepo(repo, target string, update bool) error {
+	is, err := exists(target)
+	panicOnErr(err)
+
+	if is {
+		if update {
+			logrus.Printf("Try to update repository %s", repo)
+			cmd := exec.Command("git", "checkout", "master")
+			cmd.Dir = target
+			_, err = cmd.CombinedOutput()
+			cmd = exec.Command("git", "pull")
+			cmd.Dir = target
+			_, err = cmd.CombinedOutput()
+			return err
+		}
+
+		logrus.Info("already cloned, use --update to update it")
+		return nil
+	}
+
+	logrus.Print("Clone new repository...")
+
+	return exec.Command("git", "clone", repo, target).Wait()
+}
+
+func addMatch(files []os.FileInfo, pattern, target string) []string {
+	var res []string
+	re := regexp.MustCompile(pattern)
+	for i := range files {
+		if !files[i].IsDir() && re.MatchString(files[i].Name()) {
+			res = append(res, target+"/"+files[i].Name())
+		}
+	}
+
+	return res
+}
+
+func createIndexCache(target string, recursive bool) (string, string, []string, error) {
+	var res []string
+	files, err := ioutil.ReadDir(target)
+	if err != nil {
+		return "", "", nil, err
+	}
+
+	if theme {
+		// this is a theme bundle, try to find zsh-theme
+		res = append(res, addMatch(files, `.*\.zsh-theme$`, target)...)
+	}
+
+	if len(res) == 0 {
+		// If there is an plugin.zsh file then simply source it
+		res = append(res, addMatch(files, `.*\.plugin\.zsh$`, target)...)
+	}
+
+	if len(res) == 0 {
+		res = append(res, addMatch(files, `.*\.zsh$`, target)...)
+	}
+
+	if len(res) == 0 {
+		res = append(res, addMatch(files, `.*\.sh$`, target)...)
+	}
+
+	cmd := exec.Command("git", "rev-parse", "--verify", "HEAD")
+	cmd.Dir = target
+	hash, err := cmd.Output()
+	if err != nil {
+		return "", "", nil, err
+	}
+	return strings.Trim(string(hash), " \n\t"), target, res, nil
+}
+
+func doBundle(path, subpath string, update bool) (*Plugin, error) {
+	git, target := findTargetRepo(path)
+
+	if err := cloneRepo(git, target, update); err != nil {
+		return nil, err
+	}
+	hash, fpath, res, err := createIndexCache(target+"/"+subpath, true)
+	if err != nil {
+		return nil, err
+	}
+
+	pl := Plugin{
+		Repo:    git,
+		SubPath: subpath,
+		Path:    target,
+		Hash:    hash,
+		Files:   res,
+		FPath:   fpath,
+		Order:   order,
+		Theme:   theme,
+	}
+
+	return &pl, nil
 }
