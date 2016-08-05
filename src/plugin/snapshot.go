@@ -152,7 +152,7 @@ func InstallPlugin(root string, fl string, update bool) (err error) {
 		return err
 	}
 	if update {
-		err = git.Pull(clone)
+		err = git.Fetch(clone)
 		if err == nil && d.Install.Repo.Checkout != "" {
 			return git.Checkout(clone, d.Install.Repo.Checkout)
 		}

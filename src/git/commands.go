@@ -49,6 +49,24 @@ func Pull(root string) (err error) {
 	return cmd.Wait()
 }
 
+// Fetch Changes from repository
+func Fetch(root string, params ...string) (err error) {
+	logrus.Infof("Pull into %s", root)
+	defer func() {
+		if err != nil {
+			logrus.Warnf("Pull faile with reason %s", err.Error())
+		} else {
+			logrus.Info("Pull done.")
+		}
+	}()
+	cmd := exec.Command(gitPath,append([]string{"fetch"}, params...)...)
+	cmd.Dir = root
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	return cmd.Wait()
+}
+
 func Checkout(root, target string) (err error) {
 	logrus.Infof("Checkout into %s", target)
 	defer func() {
