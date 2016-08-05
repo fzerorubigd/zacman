@@ -1,68 +1,48 @@
 package main
 
 import (
+	"assert"
+	"common"
+	"flagx"
 	"os"
 
-	"github.com/spf13/cobra"
-)
+	"path/filepath"
 
-var (
-	version    = 1
-	root       string
-	update     bool
-	rmFolder   bool
-	order      int
-	theme      bool
-	concurrent uint
-	shortList  bool
+	"github.com/Sirupsen/logrus"
+	"github.com/fzerorubigd/expand"
 )
 
 func main() {
-	var zac = &cobra.Command{
-		Use:   "zacman",
-		Short: "zacman is a zsh config manager",
-		Long: `A fast, simple zsh config builder using go,
-the goal is create a simple config with all other files
-included directly in it`,
+	err := flagx.Parse()
+	if err != nil {
+		logrus.Fatal(err)
 	}
-
-	zac.PersistentFlags().StringVarP(
-		&root,
-		"root",
-		"r",
-		getRootDir(),
-		"set the root for zacman",
-	)
-
-	zac.AddCommand(initBundleCommand())
-	zac.AddCommand(initRemoveCommand())
-	zac.AddCommand(initMkSnapCommand())
-	zac.AddCommand(initRestoreSnapCommand())
-	zac.AddCommand(initCompileCommand())
-	zac.AddCommand(initlistCommand())
-	zac.AddCommand(initUpdateCommand())
-
-	zac.Execute()
 }
 
 func getRootDir() string {
 	root := os.Getenv("ZACMAN_ROOT")
 	if root == "" {
 		var err error
-		root, err = getHomeDir()
-		panicOnErr(err)
+		root, err = expand.HomeDir()
+		assert.Nil(err)
 		root += "/.zacman"
 	}
 
 	return root
 }
 
-func makeRoot() {
-	if b, err := exists(root); !b || err != nil {
-		panicOnErr(os.Mkdir(root, 0750))
+func makeRoot() string {
+	root := getRootDir()
+	if b, err := common.Exists(root); !b || err != nil {
+		assert.Nil(os.Mkdir(root, 0750))
 	}
 
-	if b, err := exists(root + "/snapshots"); !b || err != nil {
-		panicOnErr(os.Mkdir(root+"/snapshots", 0750))
+	snapshots := filepath.Join(root, "snapshots", "default")
+	if b, err := common.Exists(snapshots); !b || err != nil {
+		assert.Nil(os.MkdirAll(snapshots, 0750))
+		active := filepath.Join(root, "snapshots", "active")
+		assert.Nil(os.Symlink(snapshots, active))
 	}
+
+	return root
 }

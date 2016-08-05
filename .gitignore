@@ -11,3 +11,5 @@ vendor/bin/*
 .env
 .vagrant
 .dir-locals.el
+vendor
+!vendor/manifest
