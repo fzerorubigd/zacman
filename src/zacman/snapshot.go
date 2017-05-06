@@ -234,9 +234,15 @@ func cloneRepo(repo, target string, update bool) error {
 		return nil
 	}
 
-	logrus.Print("Clone new repository...")
+	logrus.Printf("Clone new repository %s to %s...", repo, target)
 
-	return exec.Command("git", "clone", repo, target).Wait()
+	cmd := exec.Command("git", "clone", repo, target)
+	cmd.Start()
+	errr := cmd.Wait()
+	if errr != nil {
+	    logrus.Printf("Command finished with error: %v", errr)
+	}
+	return errr
 }
 
 func addMatch(files []os.FileInfo, pattern, target string) []string {
